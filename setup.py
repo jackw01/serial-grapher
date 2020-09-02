@@ -6,12 +6,12 @@ from setuptools import find_packages, setup
 setup(
     name='serialgrapher',
     version='0.1.0',
-    description='',
+    description='Utility for graphing CSV data received over a serial port',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     author='jackw01',
     python_requires='>=3.7.0',
-    url='',
+    url='https://github.com/jackw01/serial-grapher',
     packages=find_packages(),
     zip_safe=False,
     install_requires=[
