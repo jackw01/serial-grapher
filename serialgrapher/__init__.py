@@ -1,9 +1,10 @@
 import argparse
-import serial
 import time
 import collections
 import threading
 import csv
+
+import serial
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -11,24 +12,25 @@ import matplotlib.animation as animation
 #serialgrapher -p COM3 -l 5000 --y-max 100 --rate-limit 0.1
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', type=str,
+    parser = argparse.ArgumentParser(
+        description='Utility for graphing CSV data received over a serial port'
+    )
+    parser.add_argument('-p', type=str, metavar='PORT',
                         help='Serial port')
-    parser.add_argument('-b', type=int, default=115200,
+    parser.add_argument('-b', type=int, default=115200, metavar='BAUD_RATE',
                         help='Baud rate')
-    parser.add_argument('-l', type=int, default=1000,
+    parser.add_argument('-l', type=int, default=1000, metavar='LENGTH',
                         help='Number of data points to show on graph')
-    parser.add_argument('--dont-save', type=bool, default=False,
-                        help='Don\'t save the data to a CSV file',
-                        nargs='?', const=True)
-    parser.add_argument('--auto-scale-y', type=bool, default=False,
-                        help='Automatically scale the y axis')
-    parser.add_argument('--y-min', type=float, default=0.0,
-                        help='Minimum y value')
-    parser.add_argument('--y-max', type=float, default=1.0,
-                        help='Maximum y value')
-    parser.add_argument('--rate-limit', type=float, default=2,
+    parser.add_argument('--dont-save', action='store_true',
+                        help='Don\'t save the data to a CSV file')
+    parser.add_argument('--rate-limit', type=float, default=2, metavar='LIMIT',
                         help='Maximum sample rate in samples/second')
+    parser.add_argument('--auto-scale-y', action='store_true',
+                        help='Automatically scale the y axis')
+    parser.add_argument('--y-min', type=float, default=0.0, metavar='MIN',
+                        help='Minimum y value')
+    parser.add_argument('--y-max', type=float, default=1.0, metavar='MAX',
+                        help='Maximum y value')
     args = parser.parse_args()
 
     ser = serial.Serial(args.p, args.b, timeout=10)
@@ -61,7 +63,7 @@ def main():
         ax.set_xlabel('Time (s)')
         ax.set_ylabel(header)
         plots.append(ax.plot([], [], label=header)[0])
-        value_texts.append(ax.text(0.02, 0.95, '', transform=ax.transAxes))
+        value_texts.append(ax.text(0.02, 0.9, '', transform=ax.transAxes))
 
     run_serial_loop = True
 
