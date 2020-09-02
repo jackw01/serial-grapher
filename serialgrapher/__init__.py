@@ -17,7 +17,10 @@ def main():
     parser.add_argument('-b', type=int, default=115200,
                         help='Baud rate')
     parser.add_argument('-l', type=int, default=1000,
-                        help='Data deque length')
+                        help='Number of data points to show on graph')
+    parser.add_argument('--dont-save', type=bool, default=False,
+                        help='Don\'t save the data to a CSV file',
+                        nargs='?', const=True)
     parser.add_argument('--auto-scale-y', type=bool, default=False,
                         help='Automatically scale the y axis')
     parser.add_argument('--y-min', type=float, default=0.0,
@@ -30,8 +33,9 @@ def main():
 
     ser = serial.Serial(args.p, args.b, timeout=10)
 
-    csv_file = open(f'{time.strftime("%Y%m%dT%H%M%S")}.csv', 'w', newline='')
-    writer = csv.writer(csv_file)
+    if not args.dont_save:
+        csv_file = open(f'{time.strftime("%Y%m%dT%H%M%S")}.csv', 'w', newline='')
+        writer = csv.writer(csv_file)
 
     def get_line():
         return ser.readline().decode('ascii').strip()
@@ -40,7 +44,8 @@ def main():
     while line == '':
         line = get_line()
     headers = line.split(',')
-    writer.writerow(['Time'] + headers)
+    if not args.dont_save:
+        writer.writerow(['Time'] + headers)
 
     DataPoint = collections.namedtuple('DataPoint', 'time values')
 
@@ -69,7 +74,8 @@ def main():
             t = time.perf_counter()
             if t - data[-1].time > read_interval:
                 data.append(DataPoint(t, values))
-                writer.writerow([t] + values)
+                if not args.dont_save:
+                    writer.writerow([t] + values)
                 #event.wait(max(0, read_interval - (time.perf_counter() - t)))
 
     thread = threading.Thread(target=read_serial, daemon=True)
@@ -103,5 +109,6 @@ def main():
     event.set()
     thread.join()
     ser.close()
-    csv_file.close()
+    if not args.dont_save:
+        csv_file.close()
 
